@@ -1,0 +1,11 @@
+{
+  "name": "leetcodeextract",
+  "version": "1.0.0",
+  "description": "Extract submissions from LeetCode and push to a repository.",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT"
+}
