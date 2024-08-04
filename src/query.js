@@ -1,15 +1,25 @@
 import { readFileSync } from 'node:fs';
 
-const PROFILE = readFileSync('./src/graphql/daily.graphql').toString();
-console.log(PROFILE);
+const credentialsFilePath = process.env.LEETCODE_EXTRACT_CREDENTIALS_PATH;
+/*
+must set environment variable LEETCODE_EXTRACT_CREDENTIALS_PATH
+credentials file format (keep it safe!):
+{
+	"LEETCODE_SESSION": "...",
+	"csrftoken": "...",
+	"username": "..."
+}
+*/
 
-fetch("https://leetcode.com/graphql/", {
-	method: "POST",
+const CREDS = JSON.parse(readFileSync(credentialsFilePath).toString());
+const offset = 0;
+const limit = 20;
+
+fetch(`https://leetcode.com/api/submissions/?offset=${offset}&limit=${limit}&lastkey=`, {
+	method: "GET",
 	headers: {
-		"Content-Type": "application/json"
-	},
-	body: JSON.stringify({
-		query: PROFILE
-	})
-}).then((response) => response.text())
-  .then((txt) => console.log(txt));
+		Cookie: `LEETCODE_SESSION=${CREDS.LEETCODE_SESSION};csrftoken=${CREDS.csrftoken}`
+	}
+})
+	.then((response) => response.json())
+	.then((data) => console.log(data));
