@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
+import {BASE_URL, IS_NOT_PENDING, } from "./constants"; // todo continue
 
-const credentialsFilePath = process.env.LEETCODE_EXTRACT_CREDENTIALS_PATH;
+const credentialsFilePath = process.env.LEETCODE_CREDENTIALS_PATH;
 /*
 must set environment variable LEETCODE_EXTRACT_CREDENTIALS_PATH
 credentials file format (keep it safe!):
@@ -14,6 +15,7 @@ credentials file format (keep it safe!):
 const CREDS = JSON.parse(readFileSync(credentialsFilePath).toString());
 const offset = 0;
 const limit = 20;
+
 
 fetch(`https://leetcode.com/api/submissions/?offset=${offset}&limit=${limit}&lastkey=`, {
 	method: "GET",
