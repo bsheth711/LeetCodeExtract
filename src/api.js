@@ -9,21 +9,20 @@ must set environment variable LEETCODE_CREDENTIALS_PATH
 credentials file format (keep it safe!):
 {
 	"LEETCODE_SESSION": "...",
-	"csrftoken": "...",
-	"username": "..."
+	"csrftoken": "..."
 }
 */
 
-let lastMs = Date.now();
-let numRequests = 30;
+const requestTimes = [];
 
-const asyncTimeout = (ms) => {
+const delay = (ms) => {
   return new Promise((resolve) => {
     setTimeout(resolve, ms);
   });
 };
 
 export async function sendRequest(path, requestInit) {
+	console.log("sendRequest started");
 	if (requestInit.headers == null) {
 		requestInit.headers = {Cookie: `LEETCODE_SESSION=${CREDS.LEETCODE_SESSION};csrftoken=${CREDS.csrftoken}`};
 	}
@@ -31,30 +30,27 @@ export async function sendRequest(path, requestInit) {
 		requestInit.headers.Cookie = `LEETCODE_SESSION=${CREDS.LEETCODE_SESSION};csrftoken=${CREDS.csrftoken}`;
 	}
 
-	// todo fix rate limiting
-	const curMs = Date.now();
-	if (curMs - lastMs <= constants.INTERVAL_IN_MS) {
+	if (requestTimes.length >= constants.MAXIMUM_REQUESTS_PER_INTERVAL) {
+		console.log("waiting");
 
-		if (numRequests >= constants.MAXIMUM_REQUESTS_PER_INTERVAL) {
-			console.log("waiting");
-			console.log(constants.INTERVAL_IN_MS - (curMs - lastMs));
-			await asyncTimeout(constants.INTERVAL_IN_MS - (curMs - lastMs));
-			console.log("done waiting");
+		let requestTime = requestTimes.shift();
+		while ((requestTime != null) && (Date.now() - requestTime > constants.INTERVAL_IN_MS)) {
+			console.log("shifting");
+			requestTime = requestTimes.shift();
 		}
 
-
-		++numRequests;
-	}
-	else {
-		lastMs = curMs;
-		numRequests = 0;
+		await delay(Math.floor(constants.INTERVAL_IN_MS / constants.MAXIMUM_REQUESTS_PER_INTERVAL));	
 	}
 
+	console.log("sending request");
 	const data = await fetch(`${constants.BASE_URL}${path}`, requestInit)
 		.then((response) => {
 			console.log(response.status);
 			return response.json();
-		});
-	
+		});	
+		
+	console.log("adding req time");
+	requestTimes.push(Date.now());
+
 	return data;
 }
