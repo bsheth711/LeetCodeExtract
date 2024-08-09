@@ -13,12 +13,11 @@ credentials file format (keep it safe!):
 }
 */
 
-export const logs = new Logger();
+export const logs = new Logger("api.js");
 const requestTimes = [];
 
 // todo: add retryLimit and exponential backoff
 export async function sendRequest(path, requestInit) {
-	logs.log("sendRequest started");
 	if (requestInit.headers == null) {
 		requestInit.headers = {Cookie: `LEETCODE_SESSION=${CREDS.LEETCODE_SESSION};csrftoken=${CREDS.csrftoken}`};
 	}
@@ -27,15 +26,20 @@ export async function sendRequest(path, requestInit) {
 	}
 
 	await limit();
+	const endpoint = `${constants.BASE_URL}${path}`;
 
-	logs.log("sending request");
-	const data = await fetch(`${constants.BASE_URL}${path}`, requestInit)
+	logs.logInfo({"Sending Request": {endpoint, requestInit}});
+
+	const data = await fetch(endpoint, requestInit)
 		.then((response) => {
-			logs.log(response.status);
+			if (response.status != constants.OK_STATUS) {
+				logs.logError({"BAD RESPONSE": response});
+			}
 			return response.json();
 		});	
+
+	logs.logInfo({"Response Recieved": data});
 		
-	logs.log("adding req time");
 	requestTimes.push(Date.now());
 
 	return data;
@@ -44,12 +48,12 @@ export async function sendRequest(path, requestInit) {
 async function limit() {
 	removeRequestTimesBeyondInterval();
 
+	logs.logInfo("Waiting for requestTimes to open up.");
 	if (constants.CONFIG.LimitType === constants.LimitType.EVEN_PACED) {
 		await sleep(Math.floor(constants.INTERVAL_IN_MS / (1.5 * constants.MAXIMUM_REQUESTS_PER_INTERVAL)));	
 	}
 
 	while (requestTimes.length >= constants.MAXIMUM_REQUESTS_PER_INTERVAL) {
-		logs.log("waiting");
 
 		removeRequestTimesBeyondInterval();
 
@@ -62,10 +66,10 @@ function removeRequestTimesBeyondInterval() {
 	if (requestTimes.length > 0) {
 		requestTime = requestTimes[0];
 	}
+
 	let time = Date.now();
-	logs.log(`time: ${time}, requestTime: ${requestTime}, val ${time - requestTime > constants.INTERVAL_IN_MS}`);
+
 	while ((requestTime != null) && (Date.now() - requestTime > constants.INTERVAL_IN_MS)) {
-		logs.log("shifting");
 		requestTime = requestTimes.shift();
 	}
 }
