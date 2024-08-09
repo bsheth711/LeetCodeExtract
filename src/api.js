@@ -1,6 +1,7 @@
 import * as constants from "./constants.js";
 import { readFileSync } from 'node:fs';
 import {Logger} from "./logger.js";
+import config from "../config.json" assert { type: 'json' };
 
 const credentialsFilePath = process.env.LEETCODE_CREDENTIALS_PATH;
 const CREDS = JSON.parse(readFileSync(credentialsFilePath).toString());
@@ -28,7 +29,9 @@ export async function sendRequest(path, requestInit) {
 	await limit();
 	const endpoint = `${constants.BASE_URL}${path}`;
 
-	logs.logInfo({"Sending Request": {endpoint, requestInit}});
+	if (config.logRequestsAndResponses) {
+		logs.logInfo({"Sending Request": {endpoint, requestInit}});
+	}
 
 	const data = await fetch(endpoint, requestInit)
 		.then((response) => {
@@ -38,7 +41,9 @@ export async function sendRequest(path, requestInit) {
 			return response.json();
 		});	
 
-	logs.logInfo({"Response Recieved": data});
+	if (config.logRequestsAndResponses) {
+		logs.logInfo({"Response Recieved": data});
+	}
 		
 	requestTimes.push(Date.now());
 
@@ -49,15 +54,15 @@ async function limit() {
 	removeRequestTimesBeyondInterval();
 
 	logs.logInfo("Waiting for requestTimes to open up.");
-	if (constants.CONFIG.LimitType === constants.LimitType.EVEN_PACED) {
-		await sleep(Math.floor(constants.INTERVAL_IN_MS / (1.5 * constants.MAXIMUM_REQUESTS_PER_INTERVAL)));	
+	if (config.limitType === constants.LimitType.EVEN_PACED) {
+		await sleep(Math.floor(config.intervalInMs / (1.5 * config.maximumRequestsPerInterval)));	
 	}
 
-	while (requestTimes.length >= constants.MAXIMUM_REQUESTS_PER_INTERVAL) {
+	while (requestTimes.length >= config.maximumRequestsPerInterval) {
 
 		removeRequestTimesBeyondInterval();
 
-		await sleep(Math.floor(constants.INTERVAL_IN_MS / (2 * constants.MAXIMUM_REQUESTS_PER_INTERVAL)));	
+		await sleep(Math.floor(config.intervalInMs / (2 * config.maximumRequestsPerInterval)));	
 	}
 }
 
@@ -69,7 +74,7 @@ function removeRequestTimesBeyondInterval() {
 
 	let time = Date.now();
 
-	while ((requestTime != null) && (Date.now() - requestTime > constants.INTERVAL_IN_MS)) {
+	while ((requestTime != null) && (Date.now() - requestTime > config.intervalInMs)) {
 		requestTime = requestTimes.shift();
 	}
 }

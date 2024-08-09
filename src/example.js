@@ -1,4 +1,3 @@
-import * as constants from "./constants.js";
 import { sendRequest } from "./api.js";
 import { Logger } from "./logger.js";
 
@@ -14,9 +13,7 @@ for (let i = 0; i < 5; ++i) {
 		{method: "GET"}
 	);
 
-	logs.logInfo(data);
 }
 const endTime = Date.now();
 
 logs.logInfo(`Total Operation took: ${(endTime - startTime) / 1000} seconds`);
-logs.writeLogs("./logs.json");
