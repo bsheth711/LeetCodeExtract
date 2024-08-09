@@ -1,0 +1,9 @@
+{
+	"limitType": "EVEN_PACED",
+	"logToConsole": false,
+	"logRequestsAndResponses": false,
+	"logToFile": true,
+	"loggingFile": "./logs.json",
+	"intervalInMs": 20000,
+	"maximumRequestsPerInterval": 10
+}
