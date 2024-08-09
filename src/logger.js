@@ -1,6 +1,5 @@
 import * as constants from "./constants.js";
 import { writeFileSync } from 'node:fs';
-import { inspect } from 'node:util';
 
 export class Logger {	
 	static messages = [];
