@@ -17,3 +17,4 @@ for (let i = 0; i < 5; ++i) {
 const endTime = Date.now();
 
 logs.logInfo(`Total Operation took: ${(endTime - startTime) / 1000} seconds`);
+logs.writeLogs();
