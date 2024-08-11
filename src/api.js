@@ -17,26 +17,33 @@ credentials file format (keep it safe!):
 export const logs = new Logger("api.js");
 const requestTimes = [];
 
-// todo: add retryLimit and exponential backoff
-export async function sendRequest(path, requestInit) {
-	if (requestInit.headers == null) {
-		requestInit.headers = {Cookie: `LEETCODE_SESSION=${CREDS.LEETCODE_SESSION};csrftoken=${CREDS.csrftoken}`};
-	}
-	else {
-		requestInit.headers.Cookie = `LEETCODE_SESSION=${CREDS.LEETCODE_SESSION};csrftoken=${CREDS.csrftoken}`;
+export async function sendRequest(path, requestInit, wait = 0, retryCount = 0) {
+	const endpoint = `${constants.BASE_URL}${path}`;
+
+	if (retryCount > config.retryLimit) {
+		logs.logError({"Maximum number of retries attempted": {endpoint, requestInit}});
+		return null;
 	}
 
+	addCookieTokensToRequest(requestInit);
+
+	await sleep(wait);
 	await limit();
-	const endpoint = `${constants.BASE_URL}${path}`;
 
 	if (config.logRequestsAndResponses) {
 		logs.logInfo({"Sending Request": {endpoint, requestInit}});
 	}
 
+	requestTimes.push(Date.now());
+
 	const data = await fetch(endpoint, requestInit)
 		.then((response) => {
-			if (response.status != constants.OK_STATUS) {
+			if (response.status !== constants.OK_STATUS) {
 				logs.logError({"BAD RESPONSE": response});
+				if (wait === 0) {
+					wait = 200;
+				}
+				return sendRequest(path, requestInit, wait * 2, retryCount + 1);
 			}
 			return response.json();
 		});	
@@ -45,20 +52,29 @@ export async function sendRequest(path, requestInit) {
 		logs.logInfo({"Response Recieved": data});
 	}
 		
-	requestTimes.push(Date.now());
-
 	return data;
+}
+
+function addCookieTokensToRequest (requestInit) {
+	if (requestInit) {
+		if (!requestInit.headers) {
+			requestInit.headers = {Cookie: `LEETCODE_SESSION=${CREDS.LEETCODE_SESSION};csrftoken=${CREDS.csrftoken}`};
+		}
+		else {
+			requestInit.headers.Cookie = `LEETCODE_SESSION=${CREDS.LEETCODE_SESSION};csrftoken=${CREDS.csrftoken}`;
+		}
+	}
 }
 
 async function limit() {
 	removeRequestTimesBeyondInterval();
 
-	logs.logInfo("Waiting for requestTimes to open up.");
 	if (config.limitType === constants.LimitType.EVEN_PACED) {
 		await sleep(Math.floor(config.intervalInMs / (1.5 * config.maximumRequestsPerInterval)));	
 	}
 
 	while (requestTimes.length >= config.maximumRequestsPerInterval) {
+		logs.logInfo("Waiting for requestTimes to open up.");
 
 		removeRequestTimesBeyondInterval();
 
@@ -71,8 +87,6 @@ function removeRequestTimesBeyondInterval() {
 	if (requestTimes.length > 0) {
 		requestTime = requestTimes[0];
 	}
-
-	let time = Date.now();
 
 	while ((requestTime != null) && (Date.now() - requestTime > config.intervalInMs)) {
 		requestTime = requestTimes.shift();

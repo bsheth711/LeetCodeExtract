@@ -10,11 +10,13 @@ export class Logger {
 	}
 
 	_log(val, level) {
+		const message = new LogMessage(this.name, val, level);
+
 		if (config.logToConsole) {
-			console.log(val);
+			console.log(JSON.stringify(message, null, 4) + ",");
 		}
 
-		Logger.messages.push(new LogMessage(this.name, val, level));
+		Logger.messages.push(message);
 	}
 
 	logInfo(val) {
@@ -37,6 +39,10 @@ export class Logger {
 			this.logError(`Unable to write logs. Error ${error}`);
 			console.log(`Unable to write logs. Error ${error}`);
 		}
+	}
+
+	clearLogs() {
+		Logger.messages = [];
 	}
 }
 
