@@ -1,5 +1,5 @@
 import * as constants from "./constants.js";
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import {Logger} from "./logger.js";
 import config from "../config.json" assert { type: 'json' };
 
@@ -14,10 +14,60 @@ credentials file format (keep it safe!):
 }
 */
 
-export const logs = new Logger("api.js");
+const logs = new Logger("api.js");
 const requestTimes = [];
 
-export async function sendRequest(path, requestInit, wait = 0, retryCount = 0) {
+export async function getSubmissions(maxRequests = 100, onlyNew = true) {
+	const submissions = [];
+	let extractedIds = new Set();
+	const limit = 20;
+
+	if (onlyNew) {
+		try {
+			extractedIds = new Set(readFileSync("./extracted.csv").toString().split("\n"));
+		}
+		catch (exception) {
+			logs.logError(exception);
+		}
+	}
+
+	let hasNext = true;
+
+	for (let i = 0; (i < maxRequests) && hasNext; ++i) {
+		const offset = i * 20;
+
+		const response = await sendRequest(
+			`/api/submissions/?offset=${offset}&limit=${limit}&lastkey=`, 
+			{method: "GET"}
+		);
+
+		if (response.status !== constants.OK_STATUS) {
+			return null;
+		}
+
+		const data = await response.json();
+
+		hasNext = data.has_next;
+
+		for (const submission of data.submissions_dump) {
+			const id = submission.id.toString();
+
+			if (extractedIds.has(id)) {
+				hasNext = false;
+			}
+			else {
+				submissions.push(submission);
+				extractedIds.add(id);
+			}
+		}
+	}
+
+	writeFileSync("./extracted.csv", [...extractedIds].join("\n"));
+
+	return submissions;
+}
+
+export async function sendRequest(path, requestInit, wait = 0, retryCount = 0, addCookieTokens = true) {
 	const endpoint = `${constants.BASE_URL}${path}`;
 
 	if (retryCount > config.retryLimit) {
@@ -25,7 +75,9 @@ export async function sendRequest(path, requestInit, wait = 0, retryCount = 0) {
 		return null;
 	}
 
-	addCookieTokensToRequest(requestInit);
+	if (addCookieTokens) {
+		addCookieTokensToRequest(requestInit);
+	}
 
 	await sleep(wait);
 	await limit();
@@ -36,23 +88,26 @@ export async function sendRequest(path, requestInit, wait = 0, retryCount = 0) {
 
 	requestTimes.push(Date.now());
 
-	const data = await fetch(endpoint, requestInit)
-		.then((response) => {
-			if (response.status !== constants.OK_STATUS) {
-				logs.logError({"BAD RESPONSE": response});
-				if (wait === 0) {
-					wait = 200;
-				}
-				return sendRequest(path, requestInit, wait * 2, retryCount + 1);
-			}
-			return response.json();
-		});	
+	const response = await fetch(endpoint, requestInit);
+
+	if (response.status === constants.UNAUTHORIZED_STATUS) {
+		logs.logError({"BAD CREDENTIALS": response});
+		return response;
+	}
+
+	if (response.status !== constants.OK_STATUS) {
+		logs.logError({"BAD RESPONSE": response});
+		if (wait === 0) {
+			wait = 200;
+		}
+		return sendRequest(path, requestInit, wait * 2, retryCount + 1);
+	}
 
 	if (config.logRequestsAndResponses) {
-		logs.logInfo({"Response Recieved": data});
+		logs.logInfo({"Response Recieved": response});
 	}
 		
-	return data;
+	return response;
 }
 
 function addCookieTokensToRequest (requestInit) {

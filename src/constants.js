@@ -4,6 +4,7 @@ export const IS_NOT_PENDING = "Not Pending";
 export const ACCEPTED = "Accepted";
 
 export const OK_STATUS = 200;
+export const UNAUTHORIZED_STATUS = 401;
 
 export const LimitType = {
 	GREEDY: "GREEDY",

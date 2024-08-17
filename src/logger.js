@@ -13,7 +13,7 @@ export class Logger {
 		const message = new LogMessage(this.name, val, level);
 
 		if (config.logToConsole) {
-			console.log(JSON.stringify(message, null, 4) + ",");
+			console.dir(message, {depth: null, showHidden: false});
 		}
 
 		Logger.messages.push(message);
