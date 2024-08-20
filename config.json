@@ -2,7 +2,7 @@
 	"limitType": "EVEN_PACED",
 	"logToConsole": true,
 	"logRequestsAndResponses": true,
-	"defaultLoggingFile": "./logs.json",
+	"defaultLoggingFile": "../logs.json",
 	"intervalInMs": 4000,
 	"maximumRequestsPerInterval": 2,
 	"retryLimit": 2

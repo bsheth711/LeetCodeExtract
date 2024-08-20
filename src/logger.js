@@ -1,6 +1,16 @@
-import * as constants from "./constants.js";
 import { writeFileSync } from 'node:fs';
+import { join } from "node:path";
+
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+import * as constants from "./constants.js";
+
 import config from "../config.json" assert { type: 'json' };
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 
 export class Logger {	
 	static messages = [];
@@ -33,7 +43,8 @@ export class Logger {
 
 	writeLogs(file = config.defaultLoggingFile) {
 		try {
-			writeFileSync(file, JSON.stringify(Logger.messages, null, 4));
+			writeFileSync(join(__dirname, file), JSON.stringify(Logger.messages, null, 4));
+			this.clearLogs();
 		}
 		catch (error) {
 			this.logError(`Unable to write logs. Error ${error}`);

@@ -1,7 +1,16 @@
-import * as constants from "./constants.js";
 import { readFileSync, writeFileSync } from 'node:fs';
-import {Logger} from "./logger.js";
+import { join } from 'node:path';
+
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+import * as constants from "./constants.js";
+import { Logger } from "./logger.js";
+
 import config from "../config.json" assert { type: 'json' };
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const credentialsFilePath = process.env.LEETCODE_CREDENTIALS_PATH;
 const CREDS = JSON.parse(readFileSync(credentialsFilePath).toString());
@@ -17,14 +26,14 @@ credentials file format (keep it safe!):
 const logs = new Logger("api.js");
 const requestTimes = [];
 
-export async function getSubmissions(maxRequests = 100, onlyNew = true) {
+export async function getSubmissions(maxRequests = 500, onlyNew = true) {
 	const submissions = [];
 	let extractedIds = new Set();
 	const limit = 20;
 
 	if (onlyNew) {
 		try {
-			extractedIds = new Set(readFileSync("./extracted.csv").toString().split("\n"));
+			extractedIds = new Set(readFileSync(join(__dirname, constants.EXTRACTED_IDS_FILE_PATH)).toString().split("\n"));
 		}
 		catch (exception) {
 			logs.logError(exception);
@@ -62,7 +71,7 @@ export async function getSubmissions(maxRequests = 100, onlyNew = true) {
 		}
 	}
 
-	writeFileSync("./extracted.csv", [...extractedIds].join("\n"));
+	writeFileSync(join(__dirname, constants.EXTRACTED_IDS_FILE_PATH), [...extractedIds].join("\n"));
 
 	return submissions;
 }

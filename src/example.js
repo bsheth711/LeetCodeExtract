@@ -12,3 +12,4 @@ logs.logInfo({"submissions": submissions});
 
 const endTime = Date.now();
 logs.logInfo(`Total Operation took: ${(endTime - startTime) / 1000} seconds`);
+logs.writeLogs();
