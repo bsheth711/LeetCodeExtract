@@ -26,18 +26,16 @@ credentials file format (keep it safe!):
 const logs = new Logger("api.js");
 const requestTimes = [];
 
-export async function getSubmissions(maxRequests = 500, onlyNew = true) {
+export async function getSubmissions(onlyNew = true, maxRequests = 500) {
 	const submissions = [];
 	let extractedIds = new Set();
 	const limit = 20;
 
-	if (onlyNew) {
-		try {
-			extractedIds = new Set(readFileSync(join(__dirname, constants.EXTRACTED_IDS_FILE_PATH)).toString().split("\n"));
-		}
-		catch (exception) {
-			logs.logError(exception);
-		}
+	try {
+		extractedIds = new Set(readFileSync(join(__dirname, constants.EXTRACTED_IDS_FILE_PATH)).toString().split("\n"));
+	}
+	catch (exception) {
+		logs.logError(exception);
 	}
 
 	let hasNext = true;
@@ -61,7 +59,7 @@ export async function getSubmissions(maxRequests = 500, onlyNew = true) {
 		for (const submission of data.submissions_dump) {
 			const id = submission.id.toString();
 
-			if (extractedIds.has(id)) {
+			if (extractedIds.has(id) && onlyNew) {
 				hasNext = false;
 			}
 			else {
