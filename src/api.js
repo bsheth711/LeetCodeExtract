@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { fileURLToPath } from 'url';
@@ -28,15 +28,18 @@ const requestTimes = [];
 
 export async function getSubmissions(onlyNew = true, maxRequests = 500) {
 	const submissions = [];
-	let extractedIds = new Set();
 	const limit = 20;
 
-	try {
-		extractedIds = new Set(readFileSync(join(__dirname, constants.EXTRACTED_IDS_FILE_PATH)).toString().split("\n"));
+	const extractedIds = new Set();
+
+	const dirEntries = readdirSync(join(__dirname, constants.REPO_PATH), {recursive: true, withFileTypes: true});
+	for (const dirEntry of dirEntries) {
+		if (dirEntry.isFile()) {
+			extractedIds.add(dirEntry.name.split(".")[0]);
+		}
 	}
-	catch (exception) {
-		logs.logError(exception);
-	}
+
+	extractedIds.delete("README");
 
 	let hasNext = true;
 
@@ -68,8 +71,6 @@ export async function getSubmissions(onlyNew = true, maxRequests = 500) {
 			}
 		}
 	}
-
-	writeFileSync(join(__dirname, constants.EXTRACTED_IDS_FILE_PATH), [...extractedIds].join("\n"));
 
 	return submissions;
 }
