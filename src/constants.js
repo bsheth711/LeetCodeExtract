@@ -1,6 +1,5 @@
 export const BASE_URL = "https://leetcode.com";
 
-export const EXTRACTED_IDS_FILE_PATH = "../REPO/extracted.csv";
 export const REPO_PATH = "../REPO";
 
 export const IS_NOT_PENDING = "Not Pending";
