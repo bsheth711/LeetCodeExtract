@@ -1,5 +1,5 @@
 # LeetcodeExtract
-A Node.js project that extracts Leetcode submissions and pushes them to a repository.
+A Node.js project that extracts Leetcode submissions and pushes them to a repository. See an [example repository](https://github.com/bsheth711/LeetcodeSolutions).
 
 # Requirements
 - Node.js 20+
