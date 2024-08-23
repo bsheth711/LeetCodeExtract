@@ -100,6 +100,7 @@ export async function sendRequest(path, requestInit, wait = 0, retryCount = 0, a
 
 	if (response.status === constants.UNAUTHORIZED_STATUS) {
 		logs.logError({"BAD CREDENTIALS": response});
+		console.log("BAD CREDENTIALS");
 		return response;
 	}
 
