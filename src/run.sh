@@ -1,4 +1,7 @@
 #!/bin/bash
+set -eu
+IFS="`printf '\n\t'`"
+
 githubRepo="git@github.com:bsheth711/LeetcodeSolutions.git"
 localFolder="../REPO"
 
