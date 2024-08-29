@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eu
+set -euo pipefail
 IFS="`printf '\n\t'`"
 
 githubRepo="git@github.com:bsheth711/LeetcodeSolutions.git"
