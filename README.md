@@ -24,9 +24,5 @@ Note: Occasionally you will need to get fresh tokens and replace the ones in you
 # How To Run
 Run the following command from your Bash terminal:
 ```
-./src/run.sh
+npm start
 ```
-
-# TODO
-- How To Setup Section
-- Migrate to Typescript?
