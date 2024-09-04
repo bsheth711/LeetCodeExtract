@@ -2,7 +2,7 @@
 set -euo pipefail
 IFS="`printf '\n\t'`"
 
-githubRepo="git@github.com:bsheth711/LeetcodeSolutions.git"
+githubRepo="git@github.com:bsheth711/LeetcodeSolutions.git" # <-- your github repo ssh URL
 localFolder="../REPO"
 
 cd "$(dirname "$0")"

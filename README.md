@@ -20,6 +20,11 @@ Save the tokens in a in a json file with the following format:
 
 3. Set the environment variable LEETCODE_CREDENTIALS_PATH to the path to the file.  
 
+4. Create a remote repository to push to. Set the variable githubRepo in the bash script run.sh.
+```
+githubRepo="..." # <-- your github repo ssh URL
+```
+
 Note: Occasionally you will need to get fresh tokens and replace the ones in your tokens file.
 # How To Run
 Run the following command from your Bash terminal:
