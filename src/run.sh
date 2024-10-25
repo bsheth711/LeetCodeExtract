@@ -1,6 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 IFS="`printf '\n\t'`"
+shopt -s failglob
 
 githubRepo="git@github.com:bsheth711/LeetcodeSolutions.git" # <-- your github repo ssh URL
 localFolder="../REPO"
