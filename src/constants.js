@@ -30,5 +30,6 @@ export const LANG_TO_FILE_EXTENSION = {
 	mysql: "sql",
 	pythondata: "py",
 	bash: "sh",
-	c: "c"
+	c: "c",
+	golang: "go"
 };

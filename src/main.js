@@ -17,7 +17,7 @@ const startTime = Date.now();
 const logs = new Logger("example.js");
 
 
-const submissions = await getSubmissions();
+const submissions = await getSubmissions(false);
 
 for (const submission of submissions) {
 	if (submission.status_display !== "Accepted" 
@@ -29,6 +29,9 @@ for (const submission of submissions) {
 	let fileExtension = "txt";
 	if (constants.LANG_TO_FILE_EXTENSION[submission.lang] != null) {
 		fileExtension = constants.LANG_TO_FILE_EXTENSION[submission.lang];
+	}
+	else {
+		throw new Error("Unknown file extension: " + submission.lang);
 	}
 
 	mkdirSync(join(__dirname, constants.REPO_PATH, submission.title), {recursive: true});
