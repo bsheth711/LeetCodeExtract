@@ -17,7 +17,7 @@ const startTime = Date.now();
 const logs = new Logger("example.js");
 
 
-const submissions = await getSubmissions(false);
+const submissions = await getSubmissions();
 
 for (const submission of submissions) {
 	if (submission.status_display !== "Accepted" 

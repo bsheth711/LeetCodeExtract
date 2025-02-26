@@ -14,8 +14,8 @@ if ! test -d "${localFolder}"; then
 fi
 
 # FYI: a unix style path does not work from windows mingw environment variable path for node.exe
-node main.js
-cd "${localFolder}"
-git add .
-git commit -m "update"
-git push
+node main.js \
+&& cd "${localFolder}" \
+&& git add . \
+&& git commit -m "update" \
+&& git push
